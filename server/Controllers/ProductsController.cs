@@ -157,7 +157,7 @@ public class ProductsController(AppDbContext db) : ControllerBase
             Stock = req.Stock,
             CategoryId = req.CategoryId,
             Brand = req.Brand?.Trim() ?? "",
-            ImagesCsv = string.Join(",", (req.Images ?? []).Select(i => i.Trim()).Where(i => i != "")),
+            ImagesCsv = CatalogMap.JoinImages(req.Images ?? []),
             IsActive = req.IsActive,
         };
         ApplyVariants(product, req.Variants);
@@ -184,7 +184,7 @@ public class ProductsController(AppDbContext db) : ControllerBase
         product.Stock = req.Stock;
         product.CategoryId = req.CategoryId;
         product.Brand = req.Brand?.Trim() ?? "";
-        product.ImagesCsv = string.Join(",", (req.Images ?? []).Select(i => i.Trim()).Where(i => i != ""));
+        product.ImagesCsv = CatalogMap.JoinImages(req.Images ?? []);
         product.IsActive = req.IsActive;
 
         db.ProductVariants.RemoveRange(product.Variants);

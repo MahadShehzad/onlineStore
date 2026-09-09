@@ -11,25 +11,39 @@
       <div class="alert alert-danger py-2" role="alert">{{ error() }}</div>
     }
 
-    <div class="btn-group w-100 mb-3" role="group" aria-label="Account type">
-      <button
-        type="button"
-        class="btn"
-        [class.btn-primary]="!isVendor()"
-        [class.btn-outline-primary]="isVendor()"
-        (click)="selectRole('Customer')"
-      >
-        <i class="bi bi-person me-1"></i> Customer
-      </button>
-      <button
-        type="button"
-        class="btn"
-        [class.btn-primary]="isVendor()"
-        [class.btn-outline-primary]="!isVendor()"
-        (click)="selectRole('Vendor')"
-      >
-        <i class="bi bi-shop me-1"></i> Vendor
-      </button>
+    <div class="mb-3">
+      <div class="small fw-semibold mb-1">I want to</div>
+      <div class="row g-2">
+        <div class="col-6">
+          <button
+            type="button"
+            class="w-100 role-pick"
+            [class.role-pick--on]="role() === 'Customer'"
+            (click)="selectRole('Customer')"
+          >
+            <i class="bi bi-person fs-4"></i>
+            <span class="fw-semibold">Buy products</span>
+            <small class="text-muted">Customer account</small>
+            @if (role() === 'Customer') { <i class="bi bi-check-circle-fill check"></i> }
+          </button>
+        </div>
+        <div class="col-6">
+          <button
+            type="button"
+            class="w-100 role-pick"
+            [class.role-pick--on]="role() === 'Vendor'"
+            (click)="selectRole('Vendor')"
+          >
+            <i class="bi bi-shop fs-4"></i>
+            <span class="fw-semibold">Sell products</span>
+            <small class="text-muted">Vendor account</small>
+            @if (role() === 'Vendor') { <i class="bi bi-check-circle-fill check"></i> }
+          </button>
+        </div>
+      </div>
+      <div class="form-text mt-1">
+        Selected: <strong>{{ role() === 'Vendor' ? 'Vendor' : 'Customer' }}</strong>
+      </div>
     </div>
 
     <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
@@ -71,7 +85,7 @@
         <div class="invalid-feedback">At least 6 characters.</div>
       </div>
 
-      @if (isVendor()) {
+      @if (role() === 'Vendor') {
         <div class="mb-3">
           <label class="form-label" for="storeName">Store name</label>
           <input
@@ -89,7 +103,7 @@
         @if (submitting()) {
           <span class="spinner-border spinner-border-sm me-2"></span>
         }
-        Create account
+        Create {{ role() === 'Vendor' ? 'vendor' : 'customer' }} account
       </button>
     </form>
 

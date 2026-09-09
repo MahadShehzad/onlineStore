@@ -104,9 +104,22 @@ a { text-decoration: none; }
 .shell-header {
   height: var(--shell-header-h);
   background: var(--c-teal);
-  color: #fff;
 }
-.shell-header a { color: #fff; }
+/* the header's own text/icons are light; the dropdown panel is untouched
+   because color is set per-element here, not inherited from the header */
+.shell-header .shell-header__link,
+.shell-header .btn.text-white { color: #fff; }
+
+.shell-header .dropdown-menu {
+  background-color: #fff;
+  border: 1px solid var(--bs-border-color);
+  box-shadow: var(--shadow-md);
+}
+.shell-header .dropdown-menu .dropdown-item:hover,
+.shell-header .dropdown-menu .dropdown-item:focus {
+  background-color: #f1ede8;
+  color: var(--c-teal);
+}
 
 .shell-sidebar {
   width: var(--shell-sidebar-w);
@@ -159,6 +172,38 @@ a { text-decoration: none; }
   background: #fff;
   border-radius: 1rem;
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
+}
+
+/* account-type picker on the signup page */
+.role-pick {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  padding: 0.9rem 0.5rem;
+  border: 2px solid var(--bs-border-color);
+  border-radius: 0.75rem;
+  background: #fff;
+  color: var(--color-ink);
+  transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+}
+.role-pick:hover {
+  border-color: var(--c-clay);
+  background: #faf6f3;
+}
+.role-pick--on,
+.role-pick--on:hover {
+  border-color: var(--c-teal);
+  background: #eef3f5;
+  box-shadow: 0 0 0 3px rgba(15, 48, 64, 0.12);
+}
+.role-pick .check {
+  position: absolute;
+  top: 0.4rem;
+  right: 0.5rem;
+  color: var(--c-teal);
+  font-size: 1rem;
 }
 
 /* ---- toasts ---- */

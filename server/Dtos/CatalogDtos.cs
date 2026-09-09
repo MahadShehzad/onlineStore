@@ -54,10 +54,14 @@ public record ReviewCreateRequest(
 
 public static class CatalogMap
 {
-    public static string[] Images(string csv) =>
-        string.IsNullOrWhiteSpace(csv)
+    /// <summary>Image URLs are stored newline-separated (a data: URI can contain commas).</summary>
+    public static string[] Images(string stored) =>
+        string.IsNullOrWhiteSpace(stored)
             ? []
-            : csv.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            : stored.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+    public static string JoinImages(IEnumerable<string> images) =>
+        string.Join("\n", images.Select(i => i.Trim()).Where(i => i != ""));
 
     public static ProductSummaryDto ToSummary(this Product p) =>
         new(p.Id, p.Name, p.Slug, p.Price, Images(p.ImagesCsv), p.Brand,

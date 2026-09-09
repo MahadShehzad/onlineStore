@@ -51,9 +51,12 @@ public static class DbSeeder
         db.Users.AddRange(admin, customer, customer2, vendorUser, vendorUser2, vendorUser3, vendorUser4);
 
         // ---- vendors ----
-        var v1 = new Vendor { UserId = vendorUser.Id, StoreName = "TechNest", Description = "Gadgets, audio and accessories.", Status = "Approved", CommissionRate = 8m, StoreLogo = Img("technest-logo", 200), StoreBanner = Img("technest-banner", 1200, 300) };
-        var v2 = new Vendor { UserId = vendorUser2.Id, StoreName = "Bilal Home", Description = "Everything for a cosy home.", Status = "Approved", CommissionRate = 10m, StoreLogo = Img("bilalhome-logo", 200), StoreBanner = Img("bilalhome-banner", 1200, 300) };
-        var v3 = new Vendor { UserId = vendorUser3.Id, StoreName = "Sana Boutique", Description = "Hand-picked fashion & beauty.", Status = "Approved", CommissionRate = 12m, StoreLogo = Img("sana-logo", 200), StoreBanner = Img("sana-banner", 1200, 300) };
+        var catSlugs = categories.Select(c => c.Slug).ToList();
+        int CatIndex(string slug) => catSlugs.IndexOf(slug);
+
+        var v1 = new Vendor { UserId = vendorUser.Id, StoreName = "TechNest", Description = "Gadgets, audio and accessories.", Status = "Approved", CommissionRate = 8m, StoreLogo = ProductImage.Gallery("TechNest", "Store", 0).First(), StoreBanner = ProductImage.Gallery("TechNest gadgets", "TechNest", 0).First() };
+        var v2 = new Vendor { UserId = vendorUser2.Id, StoreName = "Bilal Home", Description = "Everything for a cosy home.", Status = "Approved", CommissionRate = 10m, StoreLogo = ProductImage.Gallery("Bilal Home", "Store", 2).First(), StoreBanner = ProductImage.Gallery("Bilal Home living", "Bilal Home", 2).First() };
+        var v3 = new Vendor { UserId = vendorUser3.Id, StoreName = "Sana Boutique", Description = "Hand-picked fashion & beauty.", Status = "Approved", CommissionRate = 12m, StoreLogo = ProductImage.Gallery("Sana Boutique", "Store", 1).First(), StoreBanner = ProductImage.Gallery("Sana Boutique fashion", "Sana Boutique", 1).First() };
         var v4 = new Vendor { UserId = vendorUser4.Id, StoreName = "Pending Store", Description = "Awaiting review.", Status = "Pending", CommissionRate = 10m };
         db.Vendors.AddRange(v1, v2, v3, v4);
 
@@ -62,12 +65,11 @@ public static class DbSeeder
         var rng = new Random(42);
         Product P(Vendor v, string name, string cat, decimal price, int stock, string brand, string desc)
         {
-            var seed = Slug.From(name);
             return new Product
             {
                 VendorId = v.Id, Name = name, Slug = Slug.Unique(name), Description = desc,
                 Price = price, Stock = stock, CategoryId = Cat(cat).Id, Brand = brand,
-                ImagesCsv = string.Join(",", Img($"{seed}-1", 700), Img($"{seed}-2", 700), Img($"{seed}-3", 700)),
+                ImagesCsv = string.Join("\n", ProductImage.Gallery(name, v.StoreName, CatIndex(cat))),
                 Rating = 0, RatingCount = 0, IsActive = true,
                 CreatedAt = DateTime.UtcNow.AddDays(-rng.Next(1, 300)),
             };
@@ -190,7 +192,4 @@ public static class DbSeeder
         }
         await db.SaveChangesAsync();
     }
-
-    private static string Img(string seed, int w, int? h = null) =>
-        $"https://picsum.photos/seed/{seed}/{w}/{h ?? w}";
 }

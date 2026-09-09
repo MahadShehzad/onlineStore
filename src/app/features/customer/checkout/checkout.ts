@@ -1,6 +1,6 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CartService } from '../../../core/services/cart.service';
 import { AddressService } from '../../../core/services/address.service';
 import { OrderService } from '../../../core/services/order.service';
@@ -12,7 +12,7 @@ import { SpinnerComponent } from '../../../shared/ui/spinner';
 
 @Component({
   selector: 'app-checkout',
-  imports: [RouterLink, ReactiveFormsModule, MoneyPipe, SpinnerComponent],
+  imports: [RouterLink, ReactiveFormsModule, FormsModule, MoneyPipe, SpinnerComponent],
   templateUrl: './checkout.html',
 })
 export class CheckoutComponent {
@@ -31,6 +31,9 @@ export class CheckoutComponent {
   protected readonly selectedAddressId = signal<string | null>(null);
   protected readonly showNewAddress = signal(false);
   protected readonly paymentMethod = signal<'Card (test)' | 'Cash on delivery'>('Card (test)');
+
+  /** Demo card fields — no validation, any input is accepted. */
+  protected card = { number: '', name: '', expiry: '', cvc: '' };
 
   protected readonly storeCount = computed(() => new Set(this.cart().lines.map((l) => l.vendorId)).size);
   protected readonly shipping = computed(() => this.storeCount() * this.meta.settings().shippingFlatFee);
@@ -81,8 +84,14 @@ export class CheckoutComponent {
       this.notify.error('Add a shipping address first.');
       return;
     }
+    let method = this.paymentMethod() as string;
+    if (method === 'Card (test)') {
+      const digits = this.card.number.replace(/\D/g, '');
+      method = digits.length >= 4 ? `Card •••• ${digits.slice(-4)}` : 'Card (test)';
+    }
+
     this.placing.set(true);
-    this.orders.checkout(addressId, this.paymentMethod()).subscribe({
+    this.orders.checkout(addressId, method).subscribe({
       next: async (created) => {
         await this.cartService.load();
         this.notify.success(`Order placed — ${created.length} order(s) created.`);

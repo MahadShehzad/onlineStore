@@ -55,8 +55,31 @@
           <label class="d-flex gap-2 border rounded p-2 mb-2" [class.border-primary]="paymentMethod() === 'Card (test)'">
             <input type="radio" name="pay" class="form-check-input mt-1"
                    [checked]="paymentMethod() === 'Card (test)'" (change)="paymentMethod.set('Card (test)')" />
-            <span><strong>Card (test mode)</strong><br /><span class="text-muted small">Simulated payment — no real charge. Stripe integration lands in Phase 6.</span></span>
+            <span><strong>Debit / Credit card</strong><br /><span class="text-muted small">Test mode — no real charge, any details are accepted.</span></span>
           </label>
+
+          @if (paymentMethod() === 'Card (test)') {
+            <div class="row g-2 mb-3 px-1">
+              <div class="col-12">
+                <label class="form-label small mb-1">Card number</label>
+                <input class="form-control" inputmode="numeric" placeholder="1234 5678 9012 3456"
+                       [(ngModel)]="card.number" name="cardNumber" />
+              </div>
+              <div class="col-12">
+                <label class="form-label small mb-1">Name on card</label>
+                <input class="form-control" placeholder="As printed on the card" [(ngModel)]="card.name" name="cardName" />
+              </div>
+              <div class="col-6">
+                <label class="form-label small mb-1">Expiry</label>
+                <input class="form-control" placeholder="MM/YY" [(ngModel)]="card.expiry" name="cardExpiry" />
+              </div>
+              <div class="col-6">
+                <label class="form-label small mb-1">CVC</label>
+                <input class="form-control" placeholder="123" [(ngModel)]="card.cvc" name="cardCvc" />
+              </div>
+            </div>
+          }
+
           <label class="d-flex gap-2 border rounded p-2" [class.border-primary]="paymentMethod() === 'Cash on delivery'">
             <input type="radio" name="pay" class="form-check-input mt-1"
                    [checked]="paymentMethod() === 'Cash on delivery'" (change)="paymentMethod.set('Cash on delivery')" />
