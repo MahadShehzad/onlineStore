@@ -60,7 +60,9 @@
             <div class="row g-2">
               <div class="col-md-8">
                 <label class="form-label">Name</label>
-                <input class="form-control" formControlName="name" />
+                <input class="form-control" formControlName="name"
+                       [class.is-invalid]="form.controls.name.touched && form.controls.name.invalid" />
+                <div class="invalid-feedback">Enter a product name (2+ characters).</div>
               </div>
               <div class="col-md-4">
                 <label class="form-label">Brand</label>
@@ -68,19 +70,27 @@
               </div>
               <div class="col-12">
                 <label class="form-label">Description</label>
-                <textarea class="form-control" rows="3" formControlName="description"></textarea>
+                <textarea class="form-control" rows="3" formControlName="description"
+                          [class.is-invalid]="form.controls.description.touched && form.controls.description.invalid"></textarea>
+                <div class="invalid-feedback">A description is required.</div>
               </div>
               <div class="col-md-4">
                 <label class="form-label">Price</label>
-                <input type="number" class="form-control" formControlName="price" />
+                <input type="text" inputmode="decimal" class="form-control" formControlName="price"
+                       [class.is-invalid]="form.controls.price.touched && form.controls.price.invalid" />
+                <div class="invalid-feedback">Enter a number (no letters or symbols).</div>
               </div>
               <div class="col-md-4">
                 <label class="form-label">Stock</label>
-                <input type="number" class="form-control" formControlName="stock" />
+                <input type="text" inputmode="numeric" class="form-control" formControlName="stock"
+                       [class.is-invalid]="form.controls.stock.touched && form.controls.stock.invalid" />
+                <div class="invalid-feedback">Enter a whole number.</div>
               </div>
               <div class="col-md-4">
                 <label class="form-label">Category</label>
-                <select class="form-select" formControlName="categoryId">
+                <select class="form-select" formControlName="categoryId"
+                        [class.is-invalid]="form.controls.categoryId.touched && form.controls.categoryId.invalid">
+                  <option value="" disabled>Choose…</option>
                   @for (c of categories(); track c.id) {
                     <option [value]="c.id">{{ c.name }}</option>
                   }
@@ -97,11 +107,14 @@
               <h6 class="fw-bold mb-0">Image URLs</h6>
               <button type="button" class="btn btn-sm btn-outline-primary" (click)="addImage()">Add image</button>
             </div>
+            <p class="text-muted small mb-1">Paste a direct image link (ending in .jpg / .png / .webp). Leave blank to use an auto-generated image.</p>
             <div formArrayName="images">
               @for (ctrl of images.controls; track $index) {
                 <div class="input-group input-group-sm mt-1">
-                  <input class="form-control" [formControlName]="$index" placeholder="https://…" />
-                  <button type="button" class="btn btn-outline-danger" (click)="images.removeAt($index)">×</button>
+                  <input class="form-control" [formControlName]="$index" placeholder="https://…/photo.jpg"
+                         [class.is-invalid]="ctrl.touched && ctrl.invalid" />
+                  <button type="button" class="btn btn-outline-danger" (click)="images.removeAt($index)"
+                          aria-label="Remove image">×</button>
                 </div>
               }
             </div>

@@ -106,7 +106,9 @@ export class ProductManagementComponent {
   }
 
   protected addImage(url = ''): void {
-    this.images.push(this.fb.nonNullable.control(url, Validators.required));
+    // optional — a blank row is fine, it's dropped on save and the product
+    // falls back to an auto-generated image
+    this.images.push(this.fb.nonNullable.control(url));
   }
 
   protected addVariant(): void {
@@ -118,7 +120,6 @@ export class ProductManagementComponent {
     this.form.reset({ price: 0, stock: 0, isActive: true, brand: '', categoryId: this.categories()[0]?.id ?? '' });
     this.images.clear();
     this.variants.clear();
-    this.addImage();
     this.modalOpen.set(true);
   }
 
@@ -138,28 +139,55 @@ export class ProductManagementComponent {
     });
     this.images.clear();
     detail.images.forEach((i) => this.addImage(i));
-    if (this.images.length === 0) this.addImage();
     this.variants.clear();
     detail.variants.forEach((v) => this.variants.push(this.variantGroup(v)));
     this.modalOpen.set(true);
   }
 
+  /** Turn "1,23,000" / "Rs 1230" / "12 000" into a number, or NaN. */
+  private toNumber(value: unknown): number {
+    const cleaned = String(value ?? '').replace(/[^0-9.-]/g, '');
+    return cleaned === '' ? NaN : Number(cleaned);
+  }
+
   protected save(): void {
-    if (this.form.invalid) {
+    // normalise price / stock first so "1,23000" style input still works
+    const priceN = this.toNumber(this.form.controls.price.value);
+    const stockN = this.toNumber(this.form.controls.stock.value);
+    if (!Number.isNaN(priceN)) this.form.controls.price.setValue(priceN);
+    if (!Number.isNaN(stockN)) this.form.controls.stock.setValue(Math.trunc(stockN));
+
+    const problems: string[] = [];
+    const c = this.form.controls;
+    if (c.name.invalid) problems.push('Name');
+    if (c.description.invalid) problems.push('Description');
+    if (Number.isNaN(priceN) || priceN < 0) {
+      c.price.setErrors({ number: true });
+      problems.push('Price');
+    }
+    if (Number.isNaN(stockN) || stockN < 0) {
+      c.stock.setErrors({ number: true });
+      problems.push('Stock');
+    }
+    if (c.categoryId.invalid) problems.push('Category');
+    if (this.variants.controls.some((ctrl) => ctrl.invalid)) problems.push('a variant row is incomplete');
+
+    if (problems.length > 0) {
       this.form.markAllAsTouched();
-      this.notify.error('Fix the highlighted fields.');
+      this.notify.error(`Please check: ${problems.join(', ')}.`);
       return;
     }
+
     const raw = this.form.getRawValue();
     const input: ProductInput = {
-      name: raw.name,
-      description: raw.description,
-      price: Number(raw.price),
-      stock: Number(raw.stock),
+      name: raw.name.trim(),
+      description: raw.description.trim(),
+      price: priceN,
+      stock: Math.trunc(stockN),
       categoryId: raw.categoryId,
-      brand: raw.brand,
+      brand: raw.brand.trim(),
       isActive: raw.isActive,
-      images: (raw.images as string[]).filter((i) => i.trim()),
+      images: (raw.images as string[]).map((i) => i.trim()).filter(Boolean),
       variants: (raw.variants as ProductInput['variants']).filter((v) => v.name && v.value),
     };
     this.saving.set(true);
