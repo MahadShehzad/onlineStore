@@ -1,0 +1,53 @@
+<section class="bg-brand-gradient text-white rounded-4 p-4 p-md-5 mb-4">
+  <h1 class="h3 fw-bold">Find something you'll love</h1>
+  <p class="opacity-75 mb-3">Search across every store on the marketplace.</p>
+  <form class="d-flex gap-2" style="max-width: 520px" (ngSubmit)="search()">
+    <input
+      class="form-control form-control-lg"
+      placeholder="Search products, brands…"
+      [(ngModel)]="term"
+      name="term"
+      aria-label="Search"
+    />
+    <button class="btn btn-accent btn-lg" type="submit"><i class="bi bi-search"></i></button>
+  </form>
+</section>
+
+<h2 class="h5 fw-bold mb-3">Categories</h2>
+<div class="row row-cols-2 row-cols-md-3 row-cols-lg-6 g-3 mb-4">
+  @for (cat of categories(); track cat.id) {
+    <div class="col">
+      <a
+        [routerLink]="['/app/products']"
+        [queryParams]="{ category: cat.slug }"
+        class="card h-100 text-center py-4 border-0 shadow-sm text-reset"
+      >
+        <i class="bi {{ cat.icon }} fs-2 text-brand"></i>
+        <div class="mt-2 fw-semibold small">{{ cat.name }}</div>
+        <div class="text-muted" style="font-size: .75rem">{{ cat.productCount }} items</div>
+      </a>
+    </div>
+  }
+</div>
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+  <h2 class="h5 fw-bold mb-0">New arrivals</h2>
+  <a routerLink="/app/products" class="btn btn-sm btn-outline-primary">View all</a>
+</div>
+
+@if (loading()) {
+  <app-spinner />
+} @else {
+  <div class="row row-cols-2 row-cols-md-3 row-cols-xl-4 g-3 mb-4">
+    @for (p of featured(); track p.id) {
+      <div class="col"><app-product-card [product]="p" /></div>
+    }
+  </div>
+
+  <h2 class="h5 fw-bold mb-3">Top rated</h2>
+  <div class="row row-cols-2 row-cols-md-3 row-cols-xl-4 g-3">
+    @for (p of topRated(); track p.id) {
+      <div class="col"><app-product-card [product]="p" /></div>
+    }
+  </div>
+}

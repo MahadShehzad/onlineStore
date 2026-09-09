@@ -1,0 +1,57 @@
+<h1 class="h4 fw-bold mb-3">My profile</h1>
+
+@if (user(); as u) {
+  <div class="row g-4" style="max-width: 900px">
+    <div class="col-lg-6">
+      <div class="card h-100">
+        <div class="card-body">
+          <h2 class="h6 fw-bold mb-3">Details</h2>
+          <form [formGroup]="profileForm" (ngSubmit)="saveProfile()" class="d-flex flex-column gap-3">
+            <div class="d-flex align-items-center gap-3">
+              <img [src]="profileForm.controls.avatarUrl.value || 'https://ui-avatars.com/api/?name=' + u.name"
+                   alt="Avatar" style="width: 56px; height: 56px; border-radius: 50%; object-fit: cover; background: #eee" />
+              <div class="small text-muted">
+                {{ u.email }}<br />
+                <span class="badge text-bg-secondary">{{ u.role }}</span>
+                @if (u.vendorStatus) { <span class="badge text-bg-light">{{ u.vendorStatus }}</span> }
+              </div>
+            </div>
+            <div>
+              <label class="form-label">Name</label>
+              <input class="form-control" formControlName="name" />
+            </div>
+            <div>
+              <label class="form-label">Phone</label>
+              <input class="form-control" formControlName="phone" />
+            </div>
+            <div>
+              <label class="form-label">Avatar URL</label>
+              <input class="form-control" formControlName="avatarUrl" placeholder="https://…" />
+            </div>
+            <button class="btn btn-primary align-self-start" [disabled]="savingProfile()">Save profile</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-6">
+      <div class="card h-100">
+        <div class="card-body">
+          <h2 class="h6 fw-bold mb-3">Change password</h2>
+          <form [formGroup]="passwordForm" (ngSubmit)="savePassword()" class="d-flex flex-column gap-3">
+            <div>
+              <label class="form-label">Current password</label>
+              <input type="password" class="form-control" formControlName="currentPassword" autocomplete="current-password" />
+            </div>
+            <div>
+              <label class="form-label">New password</label>
+              <input type="password" class="form-control" formControlName="newPassword" autocomplete="new-password" />
+              <div class="form-text">At least 6 characters.</div>
+            </div>
+            <button class="btn btn-outline-primary align-self-start" [disabled]="savingPassword()">Update password</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+}

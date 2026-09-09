@@ -1,0 +1,95 @@
+<h1 class="h4 fw-bold mb-3">Checkout</h1>
+
+@if (loading()) {
+  <app-spinner />
+} @else {
+  <div class="row g-4">
+    <div class="col-lg-7">
+      <!-- address -->
+      <div class="card mb-3">
+        <div class="card-body">
+          <h2 class="h6 fw-bold mb-3">Shipping address</h2>
+
+          @for (a of addressList(); track a.id) {
+            <label class="d-flex gap-2 border rounded p-2 mb-2" [class.border-primary]="selectedAddressId() === a.id">
+              <input type="radio" name="addr" class="form-check-input mt-1"
+                     [checked]="selectedAddressId() === a.id" (change)="selectedAddressId.set(a.id)" />
+              <span>
+                <strong>{{ a.fullName }}</strong> · {{ a.phone }}<br />
+                <span class="text-muted small">
+                  {{ a.line1 }}@if (a.line2) {, {{ a.line2 }}}, {{ a.city }}, {{ a.state }} {{ a.postalCode }}, {{ a.country }}
+                </span>
+              </span>
+            </label>
+          }
+
+          @if (!showNewAddress()) {
+            <button class="btn btn-sm btn-outline-primary" (click)="showNewAddress.set(true)">
+              <i class="bi bi-plus"></i> Add a new address
+            </button>
+          } @else {
+            <form [formGroup]="addressForm" (ngSubmit)="saveAddress()" class="row g-2 mt-1">
+              <div class="col-md-6"><input class="form-control" placeholder="Full name" formControlName="fullName" /></div>
+              <div class="col-md-6"><input class="form-control" placeholder="Phone" formControlName="phone" /></div>
+              <div class="col-12"><input class="form-control" placeholder="Address line 1" formControlName="line1" /></div>
+              <div class="col-12"><input class="form-control" placeholder="Address line 2 (optional)" formControlName="line2" /></div>
+              <div class="col-md-4"><input class="form-control" placeholder="City" formControlName="city" /></div>
+              <div class="col-md-4"><input class="form-control" placeholder="State / Province" formControlName="state" /></div>
+              <div class="col-md-4"><input class="form-control" placeholder="Postal code" formControlName="postalCode" /></div>
+              <div class="col-md-6"><input class="form-control" placeholder="Country" formControlName="country" /></div>
+              <div class="col-12 d-flex gap-2">
+                <button class="btn btn-primary btn-sm" type="submit">Save address</button>
+                @if (addressList().length) {
+                  <button class="btn btn-link btn-sm text-decoration-none" type="button" (click)="showNewAddress.set(false)">Cancel</button>
+                }
+              </div>
+            </form>
+          }
+        </div>
+      </div>
+
+      <!-- payment -->
+      <div class="card">
+        <div class="card-body">
+          <h2 class="h6 fw-bold mb-3">Payment method</h2>
+          <label class="d-flex gap-2 border rounded p-2 mb-2" [class.border-primary]="paymentMethod() === 'Card (test)'">
+            <input type="radio" name="pay" class="form-check-input mt-1"
+                   [checked]="paymentMethod() === 'Card (test)'" (change)="paymentMethod.set('Card (test)')" />
+            <span><strong>Card (test mode)</strong><br /><span class="text-muted small">Simulated payment — no real charge. Stripe integration lands in Phase 6.</span></span>
+          </label>
+          <label class="d-flex gap-2 border rounded p-2" [class.border-primary]="paymentMethod() === 'Cash on delivery'">
+            <input type="radio" name="pay" class="form-check-input mt-1"
+                   [checked]="paymentMethod() === 'Cash on delivery'" (change)="paymentMethod.set('Cash on delivery')" />
+            <span><strong>Cash on delivery</strong></span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- summary -->
+    <div class="col-lg-5">
+      <div class="card">
+        <div class="card-body">
+          <h2 class="h6 fw-bold">Order summary</h2>
+          @for (line of cart().lines; track line.id) {
+            <div class="d-flex justify-content-between small py-1">
+              <span>{{ line.name }} × {{ line.quantity }}</span>
+              <span>{{ line.unitPrice * line.quantity | money }}</span>
+            </div>
+          }
+          <hr />
+          <div class="d-flex justify-content-between"><span>Subtotal</span><span>{{ cart().subtotal | money }}</span></div>
+          <div class="d-flex justify-content-between"><span>Shipping ({{ storeCount() }} store(s))</span><span>{{ shipping() | money }}</span></div>
+          <hr />
+          <div class="d-flex justify-content-between fw-bold fs-5"><span>Total</span><span class="text-brand">{{ total() | money }}</span></div>
+
+          <button class="btn btn-primary w-100 mt-3" [disabled]="placing() || !selectedAddressId()" (click)="placeOrder()">
+            @if (placing()) { <span class="spinner-border spinner-border-sm me-2"></span> }
+            Place order
+          </button>
+          <a routerLink="/app/cart" class="btn btn-link w-100 text-decoration-none">Back to cart</a>
+        </div>
+      </div>
+    </div>
+  </div>
+}

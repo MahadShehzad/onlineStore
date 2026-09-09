@@ -1,0 +1,97 @@
+<h1 class="h4 fw-bold mb-1">Vendor dashboard</h1>
+<p class="text-muted">
+  {{ user()?.name }} ·
+  <span class="badge"
+    [class.text-bg-success]="user()?.vendorStatus === 'Approved'"
+    [class.text-bg-warning]="user()?.vendorStatus === 'Pending'"
+    [class.text-bg-danger]="user()?.vendorStatus === 'Rejected'">{{ user()?.vendorStatus }}</span>
+</p>
+
+@if (user()?.vendorStatus === 'Pending') {
+  <div class="alert alert-warning"><i class="bi bi-hourglass-split me-2"></i>
+    An admin needs to approve your store before products go live.</div>
+}
+@if (user()?.vendorStatus === 'Rejected') {
+  <div class="alert alert-danger"><i class="bi bi-x-circle me-2"></i>
+    Your store application was rejected. Contact support for details.</div>
+}
+
+@if (loading()) {
+  <app-spinner />
+} @else if (analytics(); as a) {
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+      <div class="card h-100"><div class="card-body">
+        <div class="text-muted small">Revenue</div>
+        <div class="h4 fw-bold text-brand mb-0">{{ a.totalRevenue | money }}</div>
+      </div></div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="card h-100"><div class="card-body">
+        <div class="text-muted small">Orders</div>
+        <div class="h4 fw-bold mb-0">{{ a.totalOrders }}</div>
+      </div></div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="card h-100"><div class="card-body">
+        <div class="text-muted small">Pending</div>
+        <div class="h4 fw-bold mb-0">{{ a.pendingOrders }}</div>
+      </div></div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="card h-100"><div class="card-body">
+        <div class="text-muted small">Products</div>
+        <div class="h4 fw-bold mb-0">{{ a.productCount }}</div>
+      </div></div>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-lg-7">
+      <div class="card h-100"><div class="card-body">
+        <div class="d-flex justify-content-between">
+          <h2 class="h6 fw-bold">Revenue — last 30 days</h2>
+          <a routerLink="/app/vendor/analytics" class="small text-decoration-none">Full analytics</a>
+        </div>
+        <app-bar-chart [points]="a.daily" title="Daily revenue" />
+      </div></div>
+    </div>
+    <div class="col-lg-5">
+      <div class="card h-100"><div class="card-body">
+        <h2 class="h6 fw-bold">Recent orders</h2>
+        @if (recent().length === 0) {
+          <p class="text-muted small mb-0">No orders yet.</p>
+        } @else {
+          <ul class="list-unstyled mb-0">
+            @for (o of recent(); track o.id) {
+              <li class="d-flex justify-content-between align-items-center py-1 border-bottom">
+                <a [routerLink]="['/app/orders', o.id]" class="small text-decoration-none">
+                  #{{ o.id.slice(0, 8) }}
+                </a>
+                <span class="small text-muted">{{ o.createdAt | date: 'MMM d' }}</span>
+                <app-order-status-badge [status]="o.status" />
+                <span class="small fw-semibold">{{ o.total | money }}</span>
+              </li>
+            }
+          </ul>
+          <a routerLink="/app/vendor/orders" class="btn btn-sm btn-outline-primary mt-2">All orders</a>
+        }
+      </div></div>
+    </div>
+  </div>
+
+  @if (a.topProducts.length) {
+    <h2 class="h6 fw-bold mt-4 mb-2">Best sellers</h2>
+    <div class="row row-cols-2 row-cols-md-3 row-cols-lg-5 g-2">
+      @for (p of a.topProducts; track p.id) {
+        <div class="col">
+          <div class="card h-100"><div class="card-body p-2 text-center">
+            <img [src]="p.images[0]" [alt]="p.name" style="width: 100%; aspect-ratio: 1; object-fit: cover" class="rounded mb-1" />
+            <div class="small text-truncate">{{ p.name }}</div>
+            <div class="small fw-bold text-brand">{{ p.price | money }}</div>
+          </div></div>
+        </div>
+      }
+    </div>
+  }
+}

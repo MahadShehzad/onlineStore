@@ -1,0 +1,75 @@
+<h1 class="h4 fw-bold mb-3">Platform overview</h1>
+
+@if (loading()) {
+  <app-spinner />
+} @else if (data(); as a) {
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3"><div class="card h-100"><div class="card-body">
+      <div class="small text-muted">GMV (net)</div><div class="h5 fw-bold text-brand mb-0">{{ a.gmv | money }}</div>
+    </div></div></div>
+    <div class="col-6 col-lg-3"><div class="card h-100"><div class="card-body">
+      <div class="small text-muted">Commission earned</div><div class="h5 fw-bold mb-0">{{ a.commissionEarned | money }}</div>
+    </div></div></div>
+    <div class="col-6 col-lg-3"><div class="card h-100"><div class="card-body">
+      <div class="small text-muted">Orders</div><div class="h5 fw-bold mb-0">{{ a.orderCount }}</div>
+    </div></div></div>
+    <div class="col-6 col-lg-3"><div class="card h-100"><div class="card-body">
+      <div class="small text-muted">Customers</div><div class="h5 fw-bold mb-0">{{ a.customerCount }}</div>
+    </div></div></div>
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+      <a routerLink="/app/admin/vendors" class="card h-100 text-reset text-decoration-none"><div class="card-body">
+        <div class="small text-muted">Vendors</div>
+        <div class="h5 fw-bold mb-0">{{ a.vendorCount }}</div>
+        @if (a.pendingVendorCount > 0) {
+          <span class="badge text-bg-warning mt-1">{{ a.pendingVendorCount }} pending</span>
+        }
+      </div></a>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="card h-100"><div class="card-body">
+        <div class="small text-muted">Active products</div><div class="h5 fw-bold mb-0">{{ a.productCount }}</div>
+      </div></div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <a routerLink="/app/admin/disputes" class="card h-100 text-reset text-decoration-none"><div class="card-body">
+        <div class="small text-muted">Open disputes</div>
+        <div class="h5 fw-bold mb-0" [class.text-danger]="a.openDisputeCount > 0">{{ a.openDisputeCount }}</div>
+      </div></a>
+    </div>
+    <div class="col-6 col-lg-3">
+      <a routerLink="/app/admin/analytics" class="card h-100 text-reset text-decoration-none"><div class="card-body">
+        <div class="small text-muted">Full analytics</div>
+        <div class="h6 fw-bold mb-0 mt-2"><i class="bi bi-bar-chart"></i> View report</div>
+      </div></a>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-lg-7">
+      <div class="card h-100"><div class="card-body">
+        <h2 class="h6 fw-bold">Marketplace revenue — last 12 months</h2>
+        <app-bar-chart [points]="a.monthly" title="Monthly GMV" />
+      </div></div>
+    </div>
+    <div class="col-lg-5">
+      <div class="card h-100"><div class="card-body">
+        <h2 class="h6 fw-bold">Top vendors</h2>
+        @if (a.topVendors.length === 0) {
+          <p class="small text-muted mb-0">No sales yet.</p>
+        } @else {
+          <ol class="list-group list-group-numbered list-group-flush">
+            @for (v of a.topVendors; track v.vendorId) {
+              <li class="list-group-item d-flex justify-content-between px-0">
+                <span>{{ v.storeName }}</span>
+                <span class="fw-semibold">{{ v.revenue | money }}</span>
+              </li>
+            }
+          </ol>
+        }
+      </div></div>
+    </div>
+  </div>
+}

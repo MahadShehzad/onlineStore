@@ -1,0 +1,53 @@
+<div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+  <h1 class="h4 fw-bold mb-0 me-auto">Store orders</h1>
+  <select class="form-select form-select-sm w-auto" [value]="status()" (change)="setStatus($any($event.target).value)">
+    @for (s of statuses; track s) {
+      <option [value]="s">{{ s || 'All statuses' }}</option>
+    }
+  </select>
+</div>
+
+@if (loading()) {
+  <app-spinner />
+} @else if (result(); as r) {
+  @if (r.items.length === 0) {
+    <app-empty-state icon="bi-receipt" title="No orders" hint="Orders for your store will appear here." />
+  } @else {
+    <div class="table-responsive">
+      <table class="table align-middle">
+        <thead>
+          <tr><th>Order</th><th>Customer</th><th>Placed</th><th class="text-end">Total</th><th>Status</th><th>Actions</th></tr>
+        </thead>
+        <tbody>
+          @for (o of r.items; track o.id) {
+            <tr>
+              <td>
+                <a [routerLink]="['/app/orders', o.id]" class="fw-semibold text-decoration-none">#{{ o.id.slice(0, 8) }}</a>
+                <div class="small text-muted">{{ o.items.length }} item(s)</div>
+              </td>
+              <td>{{ o.customerName }}</td>
+              <td class="small text-muted">{{ o.createdAt | date: 'MMM d, y' }}</td>
+              <td class="text-end fw-semibold">{{ o.total | money }}</td>
+              <td><app-order-status-badge [status]="o.status" /></td>
+              <td class="text-nowrap">
+                @for (action of nextActions(o); track action.status) {
+                  <button
+                    class="btn btn-sm me-1"
+                    [class.btn-primary]="!action.danger"
+                    [class.btn-outline-danger]="action.danger"
+                    [disabled]="busy() === o.id"
+                    (click)="act(o, action.status)"
+                  >{{ action.label }}</button>
+                }
+                @if (nextActions(o).length === 0) {
+                  <span class="text-muted small">—</span>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    <app-pagination [page]="r.page" [totalPages]="r.totalPages" (pageChange)="setPage($event)" />
+  }
+}

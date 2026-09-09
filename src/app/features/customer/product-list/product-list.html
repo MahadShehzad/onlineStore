@@ -1,0 +1,110 @@
+<div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+  <h1 class="h4 fw-bold mb-0 me-auto">{{ heading() }}</h1>
+
+  <select
+    class="form-select form-select-sm w-auto"
+    [value]="sort()"
+    (change)="setSort($any($event.target).value)"
+    aria-label="Sort"
+  >
+    <option value="newest">Newest</option>
+    <option value="price_asc">Price: low to high</option>
+    <option value="price_desc">Price: high to low</option>
+    <option value="rating">Top rated</option>
+    <option value="name">Name A–Z</option>
+  </select>
+
+  <button class="btn btn-sm btn-outline-primary d-lg-none" (click)="filtersOpen.set(!filtersOpen())">
+    <i class="bi bi-funnel"></i> Filters
+  </button>
+</div>
+
+<div class="row g-4">
+  <!-- filter sidebar -->
+  <aside class="col-lg-3" [class.d-none]="!filtersOpen()" [class.d-lg-block]="true">
+    <div class="card">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <h2 class="h6 fw-bold mb-0">Filters</h2>
+          <button class="btn btn-link btn-sm p-0 text-decoration-none" (click)="clearFilters()">Clear</button>
+        </div>
+
+        <div class="mb-3">
+          <div class="fw-semibold small mb-1">Category</div>
+          <div class="list-group list-group-flush small">
+            <button
+              class="list-group-item list-group-item-action border-0 px-0 py-1"
+              [class.fw-bold]="!activeCategory()"
+              (click)="pickCategory('')"
+            >All categories</button>
+            @for (c of categories(); track c.id) {
+              <button
+                class="list-group-item list-group-item-action border-0 px-0 py-1 d-flex justify-content-between"
+                [class.fw-bold]="activeCategory()?.id === c.id"
+                (click)="pickCategory(c.slug)"
+              >
+                <span>{{ c.name }}</span><span class="text-muted">{{ c.productCount }}</span>
+              </button>
+            }
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <div class="fw-semibold small mb-1">Price ({{ filterMeta().minPrice }}–{{ filterMeta().maxPrice }})</div>
+          <div class="d-flex gap-2">
+            <input type="number" class="form-control form-control-sm" placeholder="Min"
+                   [ngModel]="priceMin()" (ngModelChange)="priceMin.set($event)" />
+            <input type="number" class="form-control form-control-sm" placeholder="Max"
+                   [ngModel]="priceMax()" (ngModelChange)="priceMax.set($event)" />
+          </div>
+          <button class="btn btn-sm btn-outline-primary mt-2 w-100" (click)="applyPrice()">Apply</button>
+        </div>
+
+        <div class="mb-3">
+          <div class="fw-semibold small mb-1">Rating</div>
+          @for (r of [4, 3, 2]; track r) {
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" [id]="'r' + r"
+                     [checked]="minRating() === r" (change)="setMinRating(r)" />
+              <label class="form-check-label small" [for]="'r' + r">{{ r }} stars &amp; up</label>
+            </div>
+          }
+        </div>
+
+        @if (filterMeta().brands.length) {
+          <div>
+            <div class="fw-semibold small mb-1">Brand</div>
+            <select class="form-select form-select-sm" [value]="brand()" (change)="setBrand($any($event.target).value)">
+              <option value="">All brands</option>
+              @for (b of filterMeta().brands; track b) {
+                <option [value]="b">{{ b }}</option>
+              }
+            </select>
+          </div>
+        }
+      </div>
+    </div>
+  </aside>
+
+  <!-- grid -->
+  <div class="col-lg-9">
+    @if (loading()) {
+      <app-spinner label="Loading products…" />
+    } @else if (result(); as r) {
+      @if (r.items.length === 0) {
+        <app-empty-state icon="bi-search" title="No products match" hint="Try adjusting the filters." />
+      } @else {
+        <div class="d-flex justify-content-between align-items-center mb-2 small text-muted">
+          <span>{{ r.totalItems }} product(s)</span>
+          <span>Page {{ r.page }} of {{ r.totalPages }}</span>
+        </div>
+        <div class="row row-cols-2 row-cols-md-3 g-3">
+          @for (p of r.items; track p.id) {
+            <div class="col"><app-product-card [product]="p" /></div>
+          }
+        </div>
+        <app-pagination [page]="r.page" [totalPages]="r.totalPages" (pageChange)="setPage($event)" />
+      }
+    }
+  </div>
+</div>

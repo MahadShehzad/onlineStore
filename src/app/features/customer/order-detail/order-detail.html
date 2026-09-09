@@ -1,0 +1,115 @@
+@if (loading()) {
+  <app-spinner />
+} @else if (order(); as o) {
+  <a routerLink="/app/orders" class="small text-decoration-none"><i class="bi bi-arrow-left"></i> All orders</a>
+
+  <div class="d-flex flex-wrap align-items-center gap-2 mt-2 mb-3">
+    <h1 class="h4 fw-bold mb-0">Order #{{ o.id.slice(0, 8) }}</h1>
+    <app-order-status-badge [status]="o.status" />
+    <span class="text-muted small ms-auto">{{ o.createdAt | date: 'medium' }}</span>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-lg-8">
+      <!-- tracking -->
+      <div class="card mb-3">
+        <div class="card-body">
+          <h2 class="h6 fw-bold mb-3">Tracking</h2>
+          <div class="d-flex justify-content-between position-relative">
+            @for (step of steps(); track step.label) {
+              <div class="text-center flex-fill">
+                <div class="rounded-circle d-inline-flex align-items-center justify-content-center"
+                     [class.bg-brand]="step.done" [class.text-white]="step.done"
+                     [class.bg-light]="!step.done" [class.text-muted]="!step.done"
+                     style="width: 40px; height: 40px">
+                  <i class="bi {{ step.icon }}"></i>
+                </div>
+                <div class="small mt-1" [class.fw-semibold]="step.done">{{ step.label }}</div>
+                @if (step.at) {
+                  <div class="text-muted" style="font-size: .72rem">{{ step.at | date: 'MMM d, HH:mm' }}</div>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- items -->
+      <div class="card mb-3">
+        <div class="card-header bg-white fw-semibold">
+          <i class="bi bi-shop me-1 text-brand"></i> {{ o.storeName }}
+        </div>
+        <ul class="list-group list-group-flush">
+          @for (item of o.items; track item.id) {
+            <li class="list-group-item d-flex gap-3 align-items-center">
+              <img [appImg]="item.productImage" [src]="item.productImage" [alt]="item.productName"
+                   style="width: 56px; height: 56px; object-fit: cover" class="rounded" />
+              <div class="flex-grow-1">
+                <a [routerLink]="['/product', item.productId]" class="fw-semibold text-reset text-decoration-none">{{ item.productName }}</a>
+                @if (item.variantLabel) { <div class="small text-muted">{{ item.variantLabel }}</div> }
+                <div class="small text-muted">{{ item.unitPrice | money }} × {{ item.quantity }}</div>
+              </div>
+              <div class="fw-bold">{{ item.unitPrice * item.quantity | money }}</div>
+              @if (o.status === 'Delivered') {
+                <a [routerLink]="['/product', item.productId]" class="btn btn-sm btn-outline-primary">
+                  <i class="bi bi-star"></i> Review
+                </a>
+              }
+            </li>
+          }
+        </ul>
+      </div>
+
+      <!-- actions -->
+      <div class="d-flex flex-wrap gap-2">
+        @if (o.status === 'Pending') {
+          <button class="btn btn-outline-danger btn-sm" (click)="cancel()">Cancel order</button>
+        }
+        @if (o.status === 'Delivered' || o.status === 'Shipped') {
+          <button class="btn btn-outline-secondary btn-sm" (click)="showDispute.set(!showDispute())">
+            <i class="bi bi-flag"></i> Report a problem
+          </button>
+        }
+      </div>
+
+      @if (showDispute()) {
+        <div class="card mt-3">
+          <div class="card-body">
+            <h3 class="h6 fw-bold">Report a problem</h3>
+            <input class="form-control mb-2" placeholder="Subject" [(ngModel)]="disputeSubject" name="s" />
+            <textarea class="form-control mb-2" rows="3" placeholder="What went wrong?" [(ngModel)]="disputeBody" name="b"></textarea>
+            <button class="btn btn-primary btn-sm" (click)="raiseDispute()">Submit complaint</button>
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- summary -->
+    <div class="col-lg-4">
+      <div class="card mb-3">
+        <div class="card-body">
+          <h2 class="h6 fw-bold">Payment</h2>
+          <div class="d-flex justify-content-between"><span>Subtotal</span><span>{{ o.subtotal | money }}</span></div>
+          <div class="d-flex justify-content-between"><span>Shipping</span><span>{{ o.shippingFee | money }}</span></div>
+          <hr />
+          <div class="d-flex justify-content-between fw-bold"><span>Total</span><span class="text-brand">{{ o.total | money }}</span></div>
+          <div class="small text-muted mt-2">{{ o.paymentMethod }} · {{ o.paymentReference }}</div>
+        </div>
+      </div>
+
+      @if (o.shippingAddress; as a) {
+        <div class="card">
+          <div class="card-body">
+            <h2 class="h6 fw-bold">Ship to</h2>
+            <div>{{ a.fullName }}</div>
+            <div class="text-muted small">
+              {{ a.line1 }}@if (a.line2) {, {{ a.line2 }}}<br />
+              {{ a.city }}, {{ a.state }} {{ a.postalCode }}<br />
+              {{ a.country }} · {{ a.phone }}
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+}

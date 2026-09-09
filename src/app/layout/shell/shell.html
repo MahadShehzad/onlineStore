@@ -13,30 +13,50 @@
     <span>onlineStore</span>
   </a>
 
-  <div class="ms-auto dropdown">
-    <button
-      class="btn btn-sm text-white border-0 dropdown-toggle d-flex align-items-center gap-2"
-      type="button"
-      data-bs-toggle="dropdown"
-      aria-expanded="false"
-    >
-      <i class="bi bi-person-circle fs-5"></i>
-      <span class="d-none d-sm-inline">{{ user()?.name }}</span>
-    </button>
-    <ul class="dropdown-menu dropdown-menu-end">
-      <li>
-        <span class="dropdown-item-text small text-muted">
-          {{ user()?.email }} · {{ user()?.role }}
-        </span>
-      </li>
-      <li><hr class="dropdown-divider" /></li>
-      <li><a class="dropdown-item" routerLink="/app/profile">My profile</a></li>
-      <li>
-        <button class="dropdown-item text-danger" type="button" (click)="logout()">
-          Sign out
-        </button>
-      </li>
-    </ul>
+  <div class="ms-auto d-flex align-items-center gap-1">
+    @if (isCustomer()) {
+      <a routerLink="/app/wishlist" class="btn btn-sm text-white border-0 position-relative" aria-label="Wishlist">
+        <i class="bi bi-heart fs-5"></i>
+        @if (wishlist.count() > 0) {
+          <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill text-bg-light">
+            {{ wishlist.count() }}
+          </span>
+        }
+      </a>
+      <a routerLink="/app/cart" class="btn btn-sm text-white border-0 position-relative" aria-label="Cart">
+        <i class="bi bi-cart3 fs-5"></i>
+        @if (cart.count() > 0) {
+          <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill text-bg-warning">
+            {{ cart.count() }}
+          </span>
+        }
+      </a>
+    }
+
+    <div class="dropdown">
+      <button
+        class="btn btn-sm text-white border-0 dropdown-toggle d-flex align-items-center gap-2"
+        type="button"
+        data-bs-toggle="dropdown"
+        aria-expanded="false"
+      >
+        <i class="bi bi-person-circle fs-5"></i>
+        <span class="d-none d-sm-inline">{{ user()?.name }}</span>
+      </button>
+      <ul class="dropdown-menu dropdown-menu-end">
+        <li>
+          <span class="dropdown-item-text small text-muted">
+            {{ user()?.email }} · {{ user()?.role }}
+          </span>
+        </li>
+        <li><hr class="dropdown-divider" /></li>
+        <li><a class="dropdown-item" routerLink="/app/profile">My profile</a></li>
+        <li><a class="dropdown-item" routerLink="/">Storefront home</a></li>
+        <li>
+          <button class="dropdown-item text-danger" type="button" (click)="logout()">Sign out</button>
+        </li>
+      </ul>
+    </div>
   </div>
 </header>
 
@@ -46,24 +66,31 @@
   }
 
   <aside class="shell-sidebar flex-shrink-0 p-3" [class.open]="sidebarOpen()">
-    <nav class="nav flex-column gap-1">
-      @for (item of nav(); track item.path) {
-        <a
-          class="nav-link d-flex align-items-center gap-2"
-          [routerLink]="item.path"
-          routerLinkActive="active"
-          (click)="closeSidebar()"
-        >
-          <i class="bi" [class]="item.icon"></i>
-          <span>{{ item.label }}</span>
-        </a>
-      }
-    </nav>
+    @for (section of sections(); track section.heading) {
+      <div class="text-uppercase small fw-bold text-muted px-2 mt-3 mb-1" style="letter-spacing: .04em">
+        {{ section.heading }}
+      </div>
+      <nav class="nav flex-column gap-1">
+        @for (item of section.items; track item.path) {
+          <a
+            class="nav-link d-flex align-items-center gap-2"
+            [routerLink]="item.path"
+            routerLinkActive="active"
+            [routerLinkActiveOptions]="{ exact: item.path === '/app/vendor' || item.path === '/app/admin' }"
+            (click)="closeSidebar()"
+          >
+            <i class="bi" [class]="item.icon"></i>
+            <span>{{ item.label }}</span>
+            @if (item.path === '/app/cart' && cart.count() > 0) {
+              <span class="badge text-bg-secondary ms-auto">{{ cart.count() }}</span>
+            }
+          </a>
+        }
+      </nav>
+    }
 
     @if (user()?.role === 'Vendor' && user()?.vendorStatus === 'Pending') {
-      <div class="alert alert-warning small mt-3 mb-0">
-        Your store is awaiting admin approval.
-      </div>
+      <div class="alert alert-warning small mt-3 mb-0">Your store is awaiting admin approval.</div>
     }
   </aside>
 

@@ -1,5 +1,7 @@
 <router-outlet />
 
+<app-confirm-dialog />
+
 <div class="toast-stack" aria-live="polite" aria-atomic="true">
   @for (toast of notifications.toasts(); track toast.id) {
     <div

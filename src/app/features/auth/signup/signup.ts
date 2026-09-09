@@ -62,5 +62,7 @@ export class SignupComponent {
       return;
     }
     await this.router.navigateByUrl(homeRouteFor(result.user));
+    // fresh account — carts/wishlists start empty, nothing to load
+
   }
 }

@@ -13,6 +13,9 @@ import { routes } from './app.routes';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
 import { errorInterceptor } from './core/interceptors/error.interceptor';
 import { AuthService } from './core/services/auth.service';
+import { MetaService } from './core/services/meta.service';
+import { CartService } from './core/services/cart.service';
+import { WishlistService } from './core/services/wishlist.service';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -24,10 +27,17 @@ export const appConfig: ApplicationConfig = {
       withComponentInputBinding(),
       withInMemoryScrolling({ scrollPositionRestoration: 'top', anchorScrolling: 'enabled' }),
     ),
-    provideAppInitializer(() => {
+    provideAppInitializer(async () => {
       if (!isPlatformBrowser(inject(PLATFORM_ID))) return;
-      // Re-validate the cached session against the API before the first route resolves.
-      return inject(AuthService).restore();
+      const meta = inject(MetaService);
+      const auth = inject(AuthService);
+      const cart = inject(CartService);
+      const wishlist = inject(WishlistService);
+
+      await Promise.all([meta.load(), auth.restore()]);
+      if (auth.isAuthenticated()) {
+        await Promise.all([cart.load(), wishlist.load()]);
+      }
     }),
   ],
 };

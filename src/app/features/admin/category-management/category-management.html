@@ -1,0 +1,53 @@
+<h1 class="h4 fw-bold mb-3">Categories</h1>
+
+<div class="row g-4">
+  <div class="col-lg-7">
+    @if (loading()) {
+      <app-spinner />
+    } @else {
+      <div class="list-group">
+        @for (c of categories(); track c.id) {
+          <div class="list-group-item d-flex align-items-center gap-2">
+            <i class="bi {{ c.icon }} fs-5 text-brand"></i>
+            <div class="flex-grow-1">
+              <div class="fw-semibold">{{ c.name }}</div>
+              <div class="small text-muted">{{ c.productCount }} product(s) · /{{ c.slug }}</div>
+            </div>
+            <button class="btn btn-sm btn-outline-secondary" (click)="edit(c)"><i class="bi bi-pencil"></i></button>
+            <button class="btn btn-sm btn-outline-danger" (click)="remove(c)"><i class="bi bi-trash"></i></button>
+          </div>
+        }
+      </div>
+    }
+  </div>
+
+  <div class="col-lg-5">
+    <div class="card">
+      <div class="card-body">
+        <h2 class="h6 fw-bold">{{ editingId() ? 'Edit category' : 'New category' }}</h2>
+        <form [formGroup]="form" (ngSubmit)="save()" class="d-flex flex-column gap-2">
+          <input class="form-control" placeholder="Name" formControlName="name" />
+          <div>
+            <label class="form-label small mb-1">Icon</label>
+            <div class="d-flex flex-wrap gap-1">
+              @for (ic of icons; track ic) {
+                <button type="button" class="btn btn-sm"
+                  [class.btn-primary]="form.controls.icon.value === ic"
+                  [class.btn-outline-secondary]="form.controls.icon.value !== ic"
+                  (click)="form.controls.icon.setValue(ic)">
+                  <i class="bi {{ ic }}"></i>
+                </button>
+              }
+            </div>
+          </div>
+          <div class="d-flex gap-2">
+            <button class="btn btn-primary btn-sm" type="submit">Save</button>
+            @if (editingId()) {
+              <button class="btn btn-link btn-sm text-decoration-none" type="button" (click)="cancel()">Cancel</button>
+            }
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

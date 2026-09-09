@@ -1,4 +1,3 @@
-using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -39,6 +38,7 @@ public class AuthController(AppDbContext db, ITokenService tokens) : ControllerB
                 UserId = user.Id,
                 StoreName = string.IsNullOrWhiteSpace(req.StoreName) ? $"{req.Name}'s Store" : req.StoreName.Trim(),
                 Status = "Pending",
+                CommissionRate = (await Settings()).DefaultCommissionRate,
             };
             db.Vendors.Add(vendor);
         }
@@ -58,11 +58,7 @@ public class AuthController(AppDbContext db, ITokenService tokens) : ControllerB
         if (user.IsBlocked)
             return StatusCode(403, new { error = "This account has been blocked. Contact support." });
 
-        var vendor = user.Role == Roles.Vendor
-            ? await db.Vendors.FirstOrDefaultAsync(v => v.UserId == user.Id)
-            : null;
-
-        return await IssueAsync(user, vendor);
+        return await IssueAsync(user, await VendorFor(user));
     }
 
     [HttpPost("refresh")]
@@ -78,19 +74,15 @@ public class AuthController(AppDbContext db, ITokenService tokens) : ControllerB
         if (user is null || user.IsBlocked)
             return Unauthorized(new { error = "Account is no longer active." });
 
-        // Rotate: revoke the presented token, issue a fresh pair.
         var (raw, entity) = tokens.CreateRefreshToken(user.Id);
         stored.RevokedAt = DateTime.UtcNow;
         stored.ReplacedByTokenHash = entity.TokenHash;
         db.RefreshTokens.Add(entity);
         await db.SaveChangesAsync();
 
-        var vendor = user.Role == Roles.Vendor
-            ? await db.Vendors.FirstOrDefaultAsync(v => v.UserId == user.Id)
-            : null;
-
         var (access, expiresAt) = tokens.CreateAccessToken(user);
-        return new AuthResponse(access, raw, (int)(expiresAt - DateTime.UtcNow).TotalSeconds, user.ToDto(vendor));
+        return new AuthResponse(access, raw, (int)(expiresAt - DateTime.UtcNow).TotalSeconds,
+            user.ToDto(await VendorFor(user)));
     }
 
     [Authorize]
@@ -111,16 +103,47 @@ public class AuthController(AppDbContext db, ITokenService tokens) : ControllerB
     [HttpGet("me")]
     public async Task<ActionResult<UserDto>> Me()
     {
-        var id = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        var user = await db.Users.FirstOrDefaultAsync(u => u.Id == id);
+        var user = await db.Users.FirstOrDefaultAsync(u => u.Id == this.UserId());
+        if (user is null) return NotFound();
+        if (user.IsBlocked) return StatusCode(403, new { error = "Account blocked." });
+        return user.ToDto(await VendorFor(user));
+    }
+
+    [Authorize]
+    [HttpPut("profile")]
+    public async Task<ActionResult<UserDto>> UpdateProfile(UpdateProfileRequest req)
+    {
+        var user = await db.Users.FirstOrDefaultAsync(u => u.Id == this.UserId());
         if (user is null) return NotFound();
 
-        var vendor = user.Role == Roles.Vendor
+        user.Name = req.Name.Trim();
+        user.Phone = req.Phone?.Trim() ?? "";
+        user.AvatarUrl = req.AvatarUrl?.Trim() ?? "";
+        await db.SaveChangesAsync();
+        return user.ToDto(await VendorFor(user));
+    }
+
+    [Authorize]
+    [HttpPut("password")]
+    public async Task<IActionResult> ChangePassword(ChangePasswordRequest req)
+    {
+        var user = await db.Users.FirstOrDefaultAsync(u => u.Id == this.UserId());
+        if (user is null) return NotFound();
+        if (!BCrypt.Net.BCrypt.Verify(req.CurrentPassword, user.PasswordHash))
+            return BadRequest(new { error = "Your current password is incorrect." });
+
+        user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(req.NewPassword);
+        await db.SaveChangesAsync();
+        return NoContent();
+    }
+
+    private async Task<Vendor?> VendorFor(AppUser user) =>
+        user.Role == Roles.Vendor
             ? await db.Vendors.FirstOrDefaultAsync(v => v.UserId == user.Id)
             : null;
 
-        return user.ToDto(vendor);
-    }
+    private async Task<PlatformSetting> Settings() =>
+        await db.PlatformSettings.FindAsync("singleton") ?? new PlatformSetting();
 
     private async Task<ActionResult<AuthResponse>> IssueAsync(AppUser user, Vendor? vendor)
     {

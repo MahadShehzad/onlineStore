@@ -1,0 +1,62 @@
+<div class="d-flex align-items-center gap-2 mb-3">
+  <h1 class="h4 fw-bold mb-0 me-auto">Addresses</h1>
+  <button class="btn btn-primary btn-sm" (click)="startNew()"><i class="bi bi-plus"></i> Add address</button>
+</div>
+
+@if (loading()) {
+  <app-spinner />
+} @else {
+  @if (list().length === 0 && !formOpen()) {
+    <app-empty-state icon="bi-geo-alt" title="No addresses saved" hint="Add one to speed up checkout." />
+  }
+
+  <div class="row g-3">
+    @for (a of list(); track a.id) {
+      <div class="col-md-6">
+        <div class="card h-100">
+          <div class="card-body">
+            <div class="d-flex justify-content-between">
+              <strong>{{ a.fullName }}</strong>
+              @if (a.isDefault) { <span class="badge text-bg-success">Default</span> }
+            </div>
+            <div class="text-muted small mt-1">
+              {{ a.phone }}<br />
+              {{ a.line1 }}@if (a.line2) {, {{ a.line2 }}}<br />
+              {{ a.city }}, {{ a.state }} {{ a.postalCode }}, {{ a.country }}
+            </div>
+            <div class="mt-2 d-flex gap-2">
+              <button class="btn btn-sm btn-outline-secondary" (click)="startEdit(a)">Edit</button>
+              <button class="btn btn-sm btn-outline-danger" (click)="remove(a)">Delete</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+
+  @if (formOpen()) {
+    <div class="card mt-3">
+      <div class="card-body">
+        <h2 class="h6 fw-bold">{{ editingId() ? 'Edit address' : 'New address' }}</h2>
+        <form [formGroup]="form" (ngSubmit)="save()" class="row g-2">
+          <div class="col-md-6"><input class="form-control" placeholder="Full name" formControlName="fullName" /></div>
+          <div class="col-md-6"><input class="form-control" placeholder="Phone" formControlName="phone" /></div>
+          <div class="col-12"><input class="form-control" placeholder="Address line 1" formControlName="line1" /></div>
+          <div class="col-12"><input class="form-control" placeholder="Address line 2 (optional)" formControlName="line2" /></div>
+          <div class="col-md-4"><input class="form-control" placeholder="City" formControlName="city" /></div>
+          <div class="col-md-4"><input class="form-control" placeholder="State / Province" formControlName="state" /></div>
+          <div class="col-md-4"><input class="form-control" placeholder="Postal code" formControlName="postalCode" /></div>
+          <div class="col-md-6"><input class="form-control" placeholder="Country" formControlName="country" /></div>
+          <div class="col-12 form-check ms-2">
+            <input class="form-check-input" type="checkbox" id="def" formControlName="isDefault" />
+            <label class="form-check-label" for="def">Set as default</label>
+          </div>
+          <div class="col-12 d-flex gap-2">
+            <button class="btn btn-primary btn-sm" type="submit">Save</button>
+            <button class="btn btn-link btn-sm text-decoration-none" type="button" (click)="formOpen.set(false)">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+}

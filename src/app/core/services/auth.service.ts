@@ -79,6 +79,12 @@ export class AuthService {
     this._user.set(null);
   }
 
+  /** Push a fresh user snapshot (e.g. after editing the profile). */
+  applyUser(user: User): void {
+    this.tokens.setUser(user);
+    this._user.set(user);
+  }
+
   hasAnyRole(allowed: readonly Role[]): boolean {
     const current = this.role();
     return current !== null && allowed.includes(current);

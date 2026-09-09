@@ -1,0 +1,59 @@
+<h1 class="h4 fw-bold mb-3">Commission &amp; fees</h1>
+
+@if (loading()) {
+  <app-spinner />
+} @else {
+  <div class="row g-4">
+    <div class="col-lg-5">
+      <div class="card">
+        <div class="card-body">
+          <h2 class="h6 fw-bold">Platform defaults</h2>
+          <form [formGroup]="form" (ngSubmit)="saveSettings()" class="d-flex flex-column gap-2">
+            <div>
+              <label class="form-label">Default commission rate (%)</label>
+              <input type="number" class="form-control" formControlName="defaultCommissionRate" />
+              <div class="form-text">Applied to new vendors on registration.</div>
+            </div>
+            <div>
+              <label class="form-label">Flat shipping fee</label>
+              <input type="number" class="form-control" formControlName="shippingFlatFee" />
+              <div class="form-text">Charged once per store in an order.</div>
+            </div>
+            <button class="btn btn-primary align-self-start" [disabled]="savingSettings()">Save defaults</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-7">
+      <div class="card">
+        <div class="card-body">
+          <h2 class="h6 fw-bold">Per-vendor commission</h2>
+          @if (vendorPage(); as r) {
+            <div class="table-responsive">
+              <table class="table align-middle">
+                <thead><tr><th>Store</th><th class="text-end">Products</th><th style="width: 150px">Rate (%)</th><th></th></tr></thead>
+                <tbody>
+                  @for (v of r.items; track v.id) {
+                    <tr>
+                      <td class="fw-semibold">{{ v.storeName }}</td>
+                      <td class="text-end">{{ v.productCount }}</td>
+                      <td>
+                        <input type="number" class="form-control form-control-sm"
+                          [ngModel]="draftRates.get(v.id)" (ngModelChange)="draftRates.set(v.id, $event)" name="rate-{{ v.id }}" />
+                      </td>
+                      <td class="text-end">
+                        <button class="btn btn-sm btn-outline-primary" [disabled]="rowBusy() === v.id" (click)="saveRate(v)">Save</button>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+            <app-pagination [page]="r.page" [totalPages]="r.totalPages" (pageChange)="setPage($event)" />
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+}

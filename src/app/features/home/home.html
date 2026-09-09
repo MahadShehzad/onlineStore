@@ -23,9 +23,12 @@
           Browse thousands of products from independent vendors, add to one cart,
           and track your orders end to end.
         </p>
-        <div class="d-flex flex-wrap gap-2">
-          <a class="btn btn-accent btn-lg" routerLink="/signup">Start shopping</a>
-          <a class="btn btn-outline-light btn-lg" routerLink="/signup">Sell on onlineStore</a>
+        <form class="d-flex gap-2" style="max-width: 480px" (ngSubmit)="go()">
+          <input class="form-control form-control-lg" placeholder="Search products…" [(ngModel)]="term" name="term" />
+          <button class="btn btn-accent btn-lg" type="submit"><i class="bi bi-search"></i></button>
+        </form>
+        <div class="mt-3">
+          <a class="btn btn-outline-light" routerLink="/signup">Sell on onlineStore</a>
         </div>
       </div>
       <div class="col-lg-5 text-center d-none d-lg-block">
@@ -38,16 +41,40 @@
 <section class="container py-5">
   <h2 class="h4 fw-bold mb-4">Shop by category</h2>
   <div class="row row-cols-2 row-cols-md-3 row-cols-lg-6 g-3">
-    @for (cat of categories; track cat.name) {
-      <div class="col">
+    @for (cat of categories(); track cat.id) {
+      <a class="col text-reset text-decoration-none" [routerLink]="user() ? ['/app/products'] : ['/login']"
+         [queryParams]="user() ? { category: cat.slug } : {}">
         <div class="card h-100 text-center py-4 border-0 shadow-sm">
           <i class="bi {{ cat.icon }} fs-2 text-brand"></i>
           <div class="mt-2 fw-semibold small">{{ cat.name }}</div>
         </div>
-      </div>
+      </a>
     }
   </div>
 </section>
+
+@if (featured().length) {
+  <section class="container pb-5">
+    <h2 class="h4 fw-bold mb-4">Popular right now</h2>
+    <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-3">
+      @for (p of featured(); track p.id) {
+        <div class="col">
+          <a class="card h-100 text-reset text-decoration-none"
+             [routerLink]="user() ? ['/product', p.slug] : ['/login']">
+            <img [appImg]="p.images[0] ?? ''" [src]="p.images[0] ?? ''" [alt]="p.name"
+                 class="card-img-top" style="aspect-ratio: 1; object-fit: cover" />
+            <div class="card-body">
+              <div class="small text-muted">{{ p.storeName }}</div>
+              <div class="fw-semibold">{{ p.name }}</div>
+              <app-star-rating [value]="p.rating" [size]="0.8" />
+              <div class="fw-bold text-brand mt-1">{{ p.price | money }}</div>
+            </div>
+          </a>
+        </div>
+      }
+    </div>
+  </section>
+}
 
 <section class="bg-white border-top py-5">
   <div class="container">
@@ -69,7 +96,7 @@
 
 <footer class="bg-brand text-white-50 py-4">
   <div class="container d-flex flex-wrap justify-content-between gap-2 small">
-    <span>© {{ 2026 }} onlineStore</span>
-    <span>A multi-vendor marketplace demo · Phase 1</span>
+    <span>© 2026 onlineStore</span>
+    <span>A multi-vendor marketplace demo</span>
   </div>
 </footer>

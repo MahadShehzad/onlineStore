@@ -1,44 +1,60 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { firstValueFrom } from 'rxjs';
 import { AuthService } from '../../../core/services/auth.service';
+import { NotificationService } from '../../../core/services/notification.service';
+import { User } from '../../../core/models/user.model';
 
 @Component({
   selector: 'app-profile',
-  template: `
-    <div class="container-fluid px-0" style="max-width: 640px">
-      <h1 class="h3 fw-bold mb-1">My profile</h1>
-      <p class="text-muted">Account details for this session.</p>
-
-      @if (user(); as u) {
-        <div class="card">
-          <div class="card-body">
-            <dl class="row mb-0">
-              <dt class="col-sm-4 text-muted">Name</dt>
-              <dd class="col-sm-8">{{ u.name }}</dd>
-              <dt class="col-sm-4 text-muted">Email</dt>
-              <dd class="col-sm-8">{{ u.email }}</dd>
-              <dt class="col-sm-4 text-muted">Role</dt>
-              <dd class="col-sm-8"><span class="badge text-bg-secondary">{{ u.role }}</span></dd>
-              @if (u.role === 'Vendor') {
-                <dt class="col-sm-4 text-muted">Store status</dt>
-                <dd class="col-sm-8">
-                  <span
-                    class="badge"
-                    [class.text-bg-success]="u.vendorStatus === 'Approved'"
-                    [class.text-bg-warning]="u.vendorStatus === 'Pending'"
-                    [class.text-bg-danger]="u.vendorStatus === 'Rejected'"
-                  >{{ u.vendorStatus }}</span>
-                </dd>
-              }
-            </dl>
-          </div>
-        </div>
-        <p class="text-muted small mt-3">
-          Editing profile details lands in a later phase.
-        </p>
-      }
-    </div>
-  `,
+  imports: [ReactiveFormsModule],
+  templateUrl: './profile.html',
 })
 export class ProfileComponent {
-  protected readonly user = inject(AuthService).user;
+  private readonly fb = inject(FormBuilder);
+  private readonly http = inject(HttpClient);
+  private readonly auth = inject(AuthService);
+  private readonly notify = inject(NotificationService);
+
+  protected readonly user = this.auth.user;
+  protected readonly savingProfile = signal(false);
+  protected readonly savingPassword = signal(false);
+
+  protected readonly profileForm = this.fb.nonNullable.group({
+    name: [this.user()?.name ?? '', [Validators.required, Validators.minLength(2)]],
+    phone: [this.user()?.phone ?? ''],
+    avatarUrl: [this.user()?.avatarUrl ?? ''],
+  });
+
+  protected readonly passwordForm = this.fb.nonNullable.group({
+    currentPassword: ['', Validators.required],
+    newPassword: ['', [Validators.required, Validators.minLength(6)]],
+  });
+
+  protected async saveProfile(): Promise<void> {
+    if (this.profileForm.invalid) return;
+    this.savingProfile.set(true);
+    try {
+      const updated = await firstValueFrom(
+        this.http.put<User>('/api/auth/profile', this.profileForm.getRawValue()),
+      );
+      this.auth.applyUser(updated);
+      this.notify.success('Profile updated');
+    } finally {
+      this.savingProfile.set(false);
+    }
+  }
+
+  protected async savePassword(): Promise<void> {
+    if (this.passwordForm.invalid) return;
+    this.savingPassword.set(true);
+    try {
+      await firstValueFrom(this.http.put('/api/auth/password', this.passwordForm.getRawValue()));
+      this.passwordForm.reset();
+      this.notify.success('Password changed');
+    } finally {
+      this.savingPassword.set(false);
+    }
+  }
 }

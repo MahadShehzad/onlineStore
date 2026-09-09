@@ -1,0 +1,63 @@
+<h1 class="h4 fw-bold mb-3">Store settings</h1>
+
+@if (loading()) {
+  <app-spinner />
+} @else if (vendor(); as v) {
+  <div class="row g-4">
+    <div class="col-lg-7">
+      <div class="card">
+        <div class="card-body">
+          <form [formGroup]="form" (ngSubmit)="save()" class="d-flex flex-column gap-3">
+            <div>
+              <label class="form-label">Store name</label>
+              <input class="form-control" formControlName="storeName" />
+            </div>
+            <div>
+              <label class="form-label">Description</label>
+              <textarea class="form-control" rows="3" formControlName="description"></textarea>
+            </div>
+            <div>
+              <label class="form-label">Logo URL</label>
+              <input class="form-control" formControlName="storeLogo" placeholder="https://…" />
+            </div>
+            <div>
+              <label class="form-label">Banner URL</label>
+              <input class="form-control" formControlName="storeBanner" placeholder="https://…" />
+            </div>
+            <button class="btn btn-primary align-self-start" [disabled]="saving()">
+              @if (saving()) { <span class="spinner-border spinner-border-sm me-2"></span> }
+              Save changes
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-5">
+      <div class="card">
+        <div class="card-body">
+          <h2 class="h6 fw-bold">Preview</h2>
+          <div class="rounded overflow-hidden border">
+            <img [appImg]="form.controls.storeBanner.value" [src]="form.controls.storeBanner.value"
+                 alt="Banner" style="width: 100%; height: 110px; object-fit: cover; background: #eee" />
+            <div class="p-3 d-flex align-items-center gap-2">
+              <img [appImg]="form.controls.storeLogo.value" [src]="form.controls.storeLogo.value"
+                   alt="Logo" style="width: 48px; height: 48px; object-fit: cover; border-radius: 8px; background: #eee" />
+              <div>
+                <div class="fw-bold">{{ form.controls.storeName.value || 'Your store' }}</div>
+                <div class="small text-muted">{{ v.productCount }} products · {{ v.commissionRate }}% commission</div>
+              </div>
+            </div>
+          </div>
+          <p class="small text-muted mt-2 mb-0">
+            Status:
+            <span class="badge"
+              [class.text-bg-success]="v.status === 'Approved'"
+              [class.text-bg-warning]="v.status === 'Pending'"
+              [class.text-bg-danger]="v.status === 'Rejected'">{{ v.status }}</span>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+}

@@ -2,6 +2,8 @@ import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
+import { CartService } from '../../../core/services/cart.service';
+import { WishlistService } from '../../../core/services/wishlist.service';
 import { homeRouteFor } from '../../../core/models/user.model';
 
 @Component({
@@ -14,6 +16,8 @@ export class LoginComponent {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
+  private readonly cart = inject(CartService);
+  private readonly wishlist = inject(WishlistService);
 
   protected readonly submitting = signal(false);
   protected readonly error = signal<string | null>(null);
@@ -39,6 +43,7 @@ export class LoginComponent {
       return;
     }
 
+    await Promise.all([this.cart.load(), this.wishlist.load()]);
     const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
     await this.router.navigateByUrl(returnUrl || homeRouteFor(result.user));
   }

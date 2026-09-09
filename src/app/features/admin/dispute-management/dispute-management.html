@@ -1,0 +1,61 @@
+<div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+  <h1 class="h4 fw-bold mb-0 me-auto">Disputes</h1>
+  <select class="form-select form-select-sm w-auto" [value]="status()" (change)="setStatus($any($event.target).value)">
+    @for (s of statuses; track s) {
+      <option [value]="s">{{ s || 'All' }}</option>
+    }
+  </select>
+</div>
+
+@if (loading()) {
+  <app-spinner />
+} @else if (result(); as r) {
+  @if (r.items.length === 0) {
+    <app-empty-state icon="bi-chat-square-dots" title="No disputes here" />
+  } @else {
+    <div class="d-flex flex-column gap-3">
+      @for (d of r.items; track d.id) {
+        <div class="card">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start">
+              <h2 class="h6 fw-bold mb-1">{{ d.subject }}</h2>
+              <span class="badge"
+                [class.text-bg-warning]="d.status === 'Open'"
+                [class.text-bg-success]="d.status === 'Resolved'"
+                [class.text-bg-secondary]="d.status === 'Rejected'">{{ d.status }}</span>
+            </div>
+            <p class="text-muted small mb-1">{{ d.description }}</p>
+            <div class="small text-muted">
+              By {{ d.raisedByName }} · order
+              <a [routerLink]="['/app/orders', d.orderId]">#{{ d.orderId.slice(0, 8) }}</a>
+              · {{ d.createdAt | date: 'medium' }}
+            </div>
+
+            @if (d.resolution) {
+              <div class="alert alert-info small mt-2 mb-0"><strong>Resolution:</strong> {{ d.resolution }}</div>
+            }
+
+            @if (d.status === 'Open') {
+              @if (workingId() === d.id) {
+                <div class="mt-2">
+                  <textarea class="form-control form-control-sm mb-2" rows="2" placeholder="Resolution note…"
+                    [(ngModel)]="resolutionText" name="res"></textarea>
+                  <button class="btn btn-sm btn-primary me-1" [disabled]="busy() === d.id" (click)="resolve(d, 'Resolved')">
+                    Mark resolved
+                  </button>
+                  <button class="btn btn-sm btn-outline-danger me-1" [disabled]="busy() === d.id" (click)="resolve(d, 'Rejected')">
+                    Reject claim
+                  </button>
+                  <button class="btn btn-sm btn-link text-decoration-none" (click)="workingId.set(null)">Cancel</button>
+                </div>
+              } @else {
+                <button class="btn btn-sm btn-outline-primary mt-2" (click)="workingId.set(d.id)">Work on this</button>
+              }
+            }
+          </div>
+        </div>
+      }
+    </div>
+    <app-pagination [page]="r.page" [totalPages]="r.totalPages" (pageChange)="setPage($event)" />
+  }
+}

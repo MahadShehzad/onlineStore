@@ -35,12 +35,12 @@ namespace OnlineStore.Api.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool>("IsDefault")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Label")
+                    b.Property<string>("FullName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsDefault")
+                        .HasColumnType("bit");
 
                     b.Property<string>("Line1")
                         .IsRequired()
@@ -64,9 +64,11 @@ namespace OnlineStore.Api.Migrations
 
                     b.Property<string>("UserId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Addresses");
                 });
@@ -75,6 +77,10 @@ namespace OnlineStore.Api.Migrations
                 {
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("AvatarUrl")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -96,6 +102,10 @@ namespace OnlineStore.Api.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Phone")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Role")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -108,10 +118,47 @@ namespace OnlineStore.Api.Migrations
                     b.ToTable("Users");
                 });
 
+            modelBuilder.Entity("OnlineStore.Api.Models.CartItem", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("AddedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ProductId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("VariantId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("VariantId");
+
+                    b.ToTable("CartItems");
+                });
+
             modelBuilder.Entity("OnlineStore.Api.Models.Category", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Icon")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -132,10 +179,63 @@ namespace OnlineStore.Api.Migrations
                     b.ToTable("Categories");
                 });
 
+            modelBuilder.Entity("OnlineStore.Api.Models.Dispute", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("OrderId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("RaisedByUserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Resolution")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("ResolvedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Subject")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Status");
+
+                    b.ToTable("Disputes");
+                });
+
             modelBuilder.Entity("OnlineStore.Api.Models.Order", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime?>("AcceptedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("CommissionAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("CommissionRate")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("decimal(5,2)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -144,17 +244,31 @@ namespace OnlineStore.Api.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<DateTime?>("DeliveredAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("PaymentMethod")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PaymentReference")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("ShippedAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("ShippingAddressJson")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<decimal>("ShippingFee")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<string>("Status")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<decimal>("Subtotal")
                         .HasPrecision(18, 2)
@@ -164,9 +278,17 @@ namespace OnlineStore.Api.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<string>("VendorId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CustomerId");
+
+                    b.HasIndex("Status");
+
+                    b.HasIndex("VendorId");
 
                     b.ToTable("Orders");
                 });
@@ -184,6 +306,10 @@ namespace OnlineStore.Api.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("ProductImage")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("ProductName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -195,17 +321,41 @@ namespace OnlineStore.Api.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<string>("VendorId")
+                    b.Property<string>("VariantLabel")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("OrderId");
 
-                    b.HasIndex("VendorId");
-
                     b.ToTable("OrderItems");
+                });
+
+            modelBuilder.Entity("OnlineStore.Api.Models.PlatformSetting", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("CurrencyCode")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CurrencySymbol")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("DefaultCommissionRate")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("decimal(5,2)");
+
+                    b.Property<decimal>("ShippingFlatFee")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("PlatformSettings");
                 });
 
             modelBuilder.Entity("OnlineStore.Api.Models.Product", b =>
@@ -264,11 +414,44 @@ namespace OnlineStore.Api.Migrations
 
                     b.HasIndex("CategoryId");
 
+                    b.HasIndex("IsActive");
+
                     b.HasIndex("Slug");
 
                     b.HasIndex("VendorId");
 
                     b.ToTable("Products");
+                });
+
+            modelBuilder.Entity("OnlineStore.Api.Models.ProductVariant", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("PriceDelta")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("ProductId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("Stock")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Value")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("ProductVariants");
                 });
 
             modelBuilder.Entity("OnlineStore.Api.Models.RefreshToken", b =>
@@ -332,6 +515,10 @@ namespace OnlineStore.Api.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<string>("UserName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("Id");
 
                     b.HasIndex("ProductId", "UserId")
@@ -356,9 +543,13 @@ namespace OnlineStore.Api.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Status")
+                    b.Property<string>("RejectionReason")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("StoreBanner")
                         .IsRequired()
@@ -378,10 +569,56 @@ namespace OnlineStore.Api.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Status");
+
                     b.HasIndex("UserId")
                         .IsUnique();
 
                     b.ToTable("Vendors");
+                });
+
+            modelBuilder.Entity("OnlineStore.Api.Models.WishlistItem", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("AddedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ProductId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("UserId", "ProductId")
+                        .IsUnique();
+
+                    b.ToTable("WishlistItems");
+                });
+
+            modelBuilder.Entity("OnlineStore.Api.Models.CartItem", b =>
+                {
+                    b.HasOne("OnlineStore.Api.Models.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("OnlineStore.Api.Models.ProductVariant", "Variant")
+                        .WithMany()
+                        .HasForeignKey("VariantId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.Navigation("Product");
+
+                    b.Navigation("Variant");
                 });
 
             modelBuilder.Entity("OnlineStore.Api.Models.Order", b =>
@@ -392,7 +629,15 @@ namespace OnlineStore.Api.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
+                    b.HasOne("OnlineStore.Api.Models.Vendor", "Vendor")
+                        .WithMany()
+                        .HasForeignKey("VendorId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
                     b.Navigation("Customer");
+
+                    b.Navigation("Vendor");
                 });
 
             modelBuilder.Entity("OnlineStore.Api.Models.OrderItem", b =>
@@ -425,6 +670,17 @@ namespace OnlineStore.Api.Migrations
                     b.Navigation("Vendor");
                 });
 
+            modelBuilder.Entity("OnlineStore.Api.Models.ProductVariant", b =>
+                {
+                    b.HasOne("OnlineStore.Api.Models.Product", "Product")
+                        .WithMany("Variants")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+                });
+
             modelBuilder.Entity("OnlineStore.Api.Models.RefreshToken", b =>
                 {
                     b.HasOne("OnlineStore.Api.Models.AppUser", "User")
@@ -447,6 +703,17 @@ namespace OnlineStore.Api.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("OnlineStore.Api.Models.WishlistItem", b =>
+                {
+                    b.HasOne("OnlineStore.Api.Models.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+                });
+
             modelBuilder.Entity("OnlineStore.Api.Models.AppUser", b =>
                 {
                     b.Navigation("RefreshTokens");
@@ -455,6 +722,11 @@ namespace OnlineStore.Api.Migrations
             modelBuilder.Entity("OnlineStore.Api.Models.Order", b =>
                 {
                     b.Navigation("Items");
+                });
+
+            modelBuilder.Entity("OnlineStore.Api.Models.Product", b =>
+                {
+                    b.Navigation("Variants");
                 });
 #pragma warning restore 612, 618
         }

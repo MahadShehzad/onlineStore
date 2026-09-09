@@ -10,6 +10,8 @@ export interface User {
   email: string;
   role: Role;
   isBlocked: boolean;
+  phone: string;
+  avatarUrl: string;
   /** Present only for vendor accounts. */
   vendorId: string | null;
   vendorStatus: VendorStatus | null;

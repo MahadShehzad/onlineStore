@@ -1,0 +1,43 @@
+<div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+  <h1 class="h4 fw-bold mb-0 me-auto">All orders</h1>
+  <form class="d-flex gap-1" (ngSubmit)="runSearch()">
+    <input class="form-control form-control-sm" placeholder="Order / customer / store…" [(ngModel)]="search" name="q" />
+    <button class="btn btn-sm btn-outline-secondary" type="submit"><i class="bi bi-search"></i></button>
+  </form>
+  <select class="form-select form-select-sm w-auto" [value]="status()" (change)="setStatus($any($event.target).value)">
+    @for (s of statuses; track s) {
+      <option [value]="s">{{ s || 'All statuses' }}</option>
+    }
+  </select>
+</div>
+
+@if (loading()) {
+  <app-spinner />
+} @else if (result(); as r) {
+  @if (r.items.length === 0) {
+    <app-empty-state icon="bi-receipt-cutoff" title="No orders match" />
+  } @else {
+    <div class="table-responsive">
+      <table class="table align-middle">
+        <thead>
+          <tr><th>Order</th><th>Customer</th><th>Store</th><th>Placed</th><th class="text-end">Total</th>
+            <th class="text-end">Commission</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+          @for (o of r.items; track o.id) {
+            <tr>
+              <td><a [routerLink]="['/app/orders', o.id]" class="text-decoration-none">#{{ o.id.slice(0, 8) }}</a></td>
+              <td>{{ o.customerName }}</td>
+              <td>{{ o.storeName }}</td>
+              <td class="small text-muted">{{ o.createdAt | date: 'MMM d, y' }}</td>
+              <td class="text-end fw-semibold">{{ o.total | money }}</td>
+              <td class="text-end text-muted">{{ o.commissionAmount | money }}</td>
+              <td><app-order-status-badge [status]="o.status" /></td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    <app-pagination [page]="r.page" [totalPages]="r.totalPages" (pageChange)="setPage($event)" />
+  }
+}

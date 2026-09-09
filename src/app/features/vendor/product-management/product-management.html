@@ -1,0 +1,138 @@
+<div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+  <h1 class="h4 fw-bold mb-0 me-auto">My products</h1>
+  <form class="d-flex gap-1" (ngSubmit)="runSearch()">
+    <input class="form-control form-control-sm" placeholder="Search…" [(ngModel)]="search" name="q" />
+    <button class="btn btn-sm btn-outline-secondary" type="submit"><i class="bi bi-search"></i></button>
+  </form>
+  <button class="btn btn-primary btn-sm" (click)="openNew()"><i class="bi bi-plus"></i> Add product</button>
+</div>
+
+@if (loading()) {
+  <app-spinner />
+} @else if (result(); as r) {
+  @if (r.items.length === 0) {
+    <app-empty-state icon="bi-box" title="No products yet" hint="Add your first product to start selling." />
+  } @else {
+    <div class="table-responsive">
+      <table class="table align-middle">
+        <thead>
+          <tr><th>Product</th><th>Category</th><th class="text-end">Price</th><th class="text-end">Stock</th><th>Status</th><th></th></tr>
+        </thead>
+        <tbody>
+          @for (p of r.items; track p.id) {
+            <tr>
+              <td class="d-flex align-items-center gap-2">
+                <img [appImg]="p.images[0] ?? ''" [src]="p.images[0] ?? ''" [alt]="p.name"
+                     style="width: 40px; height: 40px; object-fit: cover" class="rounded" />
+                <span class="fw-semibold">{{ p.name }}</span>
+              </td>
+              <td>{{ p.categoryName }}</td>
+              <td class="text-end">{{ p.price | money }}</td>
+              <td class="text-end" [class.text-danger]="p.stock === 0">{{ p.stock }}</td>
+              <td>
+                <span class="badge" [class.text-bg-success]="p.isActive" [class.text-bg-secondary]="!p.isActive">
+                  {{ p.isActive ? 'Active' : 'Hidden' }}
+                </span>
+              </td>
+              <td class="text-end text-nowrap">
+                <button class="btn btn-sm btn-outline-secondary" (click)="openEdit(p)"><i class="bi bi-pencil"></i></button>
+                <button class="btn btn-sm btn-outline-danger ms-1" (click)="remove(p)"><i class="bi bi-trash"></i></button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    <app-pagination [page]="r.page" [totalPages]="r.totalPages" (pageChange)="setPage($event)" />
+  }
+}
+
+@if (modalOpen()) {
+  <div class="modal fade show d-block" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+      <div class="modal-content">
+        <form [formGroup]="form" (ngSubmit)="save()">
+          <div class="modal-header">
+            <h5 class="modal-title">{{ title() }}</h5>
+            <button type="button" class="btn-close" (click)="modalOpen.set(false)"></button>
+          </div>
+          <div class="modal-body">
+            <div class="row g-2">
+              <div class="col-md-8">
+                <label class="form-label">Name</label>
+                <input class="form-control" formControlName="name" />
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Brand</label>
+                <input class="form-control" formControlName="brand" />
+              </div>
+              <div class="col-12">
+                <label class="form-label">Description</label>
+                <textarea class="form-control" rows="3" formControlName="description"></textarea>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Price</label>
+                <input type="number" class="form-control" formControlName="price" />
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Stock</label>
+                <input type="number" class="form-control" formControlName="stock" />
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Category</label>
+                <select class="form-select" formControlName="categoryId">
+                  @for (c of categories(); track c.id) {
+                    <option [value]="c.id">{{ c.name }}</option>
+                  }
+                </select>
+              </div>
+              <div class="col-12 form-check ms-2 mt-2">
+                <input type="checkbox" class="form-check-input" id="active" formControlName="isActive" />
+                <label class="form-check-label" for="active">Visible in the storefront</label>
+              </div>
+            </div>
+
+            <hr />
+            <div class="d-flex justify-content-between align-items-center">
+              <h6 class="fw-bold mb-0">Image URLs</h6>
+              <button type="button" class="btn btn-sm btn-outline-primary" (click)="addImage()">Add image</button>
+            </div>
+            <div formArrayName="images">
+              @for (ctrl of images.controls; track $index) {
+                <div class="input-group input-group-sm mt-1">
+                  <input class="form-control" [formControlName]="$index" placeholder="https://…" />
+                  <button type="button" class="btn btn-outline-danger" (click)="images.removeAt($index)">×</button>
+                </div>
+              }
+            </div>
+
+            <hr />
+            <div class="d-flex justify-content-between align-items-center">
+              <h6 class="fw-bold mb-0">Variants (size / colour)</h6>
+              <button type="button" class="btn btn-sm btn-outline-primary" (click)="addVariant()">Add variant</button>
+            </div>
+            <div formArrayName="variants">
+              @for (grp of variants.controls; track $index) {
+                <div class="row g-1 mt-1" [formGroupName]="$index">
+                  <div class="col-3"><input class="form-control form-control-sm" placeholder="Name" formControlName="name" /></div>
+                  <div class="col-3"><input class="form-control form-control-sm" placeholder="Value" formControlName="value" /></div>
+                  <div class="col-3"><input type="number" class="form-control form-control-sm" placeholder="+ price" formControlName="priceDelta" /></div>
+                  <div class="col-2"><input type="number" class="form-control form-control-sm" placeholder="Stock" formControlName="stock" /></div>
+                  <div class="col-1"><button type="button" class="btn btn-sm btn-outline-danger" (click)="variants.removeAt($index)">×</button></div>
+                </div>
+              }
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-secondary" (click)="modalOpen.set(false)">Cancel</button>
+            <button type="submit" class="btn btn-primary" [disabled]="saving()">
+              @if (saving()) { <span class="spinner-border spinner-border-sm me-2"></span> }
+              Save product
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="modal-backdrop fade show"></div>
+}
