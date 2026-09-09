@@ -1,0 +1,73 @@
+<header class="shell-header d-flex align-items-center gap-2 px-3 sticky-top">
+  <button
+    class="btn btn-sm text-white d-lg-none border-0"
+    type="button"
+    (click)="toggleSidebar()"
+    aria-label="Toggle menu"
+  >
+    <i class="bi bi-list fs-4"></i>
+  </button>
+
+  <a routerLink="/app" class="d-flex align-items-center gap-2 fw-bold fs-5">
+    <i class="bi bi-bag-check-fill text-accent"></i>
+    <span>onlineStore</span>
+  </a>
+
+  <div class="ms-auto dropdown">
+    <button
+      class="btn btn-sm text-white border-0 dropdown-toggle d-flex align-items-center gap-2"
+      type="button"
+      data-bs-toggle="dropdown"
+      aria-expanded="false"
+    >
+      <i class="bi bi-person-circle fs-5"></i>
+      <span class="d-none d-sm-inline">{{ user()?.name }}</span>
+    </button>
+    <ul class="dropdown-menu dropdown-menu-end">
+      <li>
+        <span class="dropdown-item-text small text-muted">
+          {{ user()?.email }} · {{ user()?.role }}
+        </span>
+      </li>
+      <li><hr class="dropdown-divider" /></li>
+      <li><a class="dropdown-item" routerLink="/app/profile">My profile</a></li>
+      <li>
+        <button class="dropdown-item text-danger" type="button" (click)="logout()">
+          Sign out
+        </button>
+      </li>
+    </ul>
+  </div>
+</header>
+
+<div class="d-flex" style="min-height: calc(100vh - var(--shell-header-h))">
+  @if (sidebarOpen()) {
+    <div class="shell-backdrop d-lg-none" (click)="closeSidebar()"></div>
+  }
+
+  <aside class="shell-sidebar flex-shrink-0 p-3" [class.open]="sidebarOpen()">
+    <nav class="nav flex-column gap-1">
+      @for (item of nav(); track item.path) {
+        <a
+          class="nav-link d-flex align-items-center gap-2"
+          [routerLink]="item.path"
+          routerLinkActive="active"
+          (click)="closeSidebar()"
+        >
+          <i class="bi" [class]="item.icon"></i>
+          <span>{{ item.label }}</span>
+        </a>
+      }
+    </nav>
+
+    @if (user()?.role === 'Vendor' && user()?.vendorStatus === 'Pending') {
+      <div class="alert alert-warning small mt-3 mb-0">
+        Your store is awaiting admin approval.
+      </div>
+    }
+  </aside>
+
+  <main class="flex-grow-1 py-4 px-3 px-md-4" style="min-width: 0">
+    <router-outlet />
+  </main>
+</div>

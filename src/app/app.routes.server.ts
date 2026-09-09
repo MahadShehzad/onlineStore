@@ -1,8 +1,6 @@
 import { RenderMode, ServerRoute } from '@angular/ssr';
 
 export const serverRoutes: ServerRoute[] = [
-  {
-    path: '**',
-    renderMode: RenderMode.Prerender
-  }
+  // Auth-gated and dynamic routes are rendered per-request, not prerendered.
+  { path: '**', renderMode: RenderMode.Server },
 ];

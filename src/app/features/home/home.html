@@ -1,0 +1,75 @@
+<nav class="navbar navbar-expand-lg bg-brand" data-bs-theme="dark">
+  <div class="container">
+    <a class="navbar-brand fw-bold d-flex align-items-center gap-2" routerLink="/">
+      <i class="bi bi-bag-check-fill text-accent"></i> onlineStore
+    </a>
+    <div class="ms-auto d-flex gap-2">
+      @if (user()) {
+        <a class="btn btn-accent btn-sm" [routerLink]="appHome()">Go to dashboard</a>
+      } @else {
+        <a class="btn btn-outline-light btn-sm" routerLink="/login">Sign in</a>
+        <a class="btn btn-accent btn-sm" routerLink="/signup">Get started</a>
+      }
+    </div>
+  </div>
+</nav>
+
+<header class="bg-brand-gradient text-white py-5">
+  <div class="container py-lg-4">
+    <div class="row align-items-center g-4">
+      <div class="col-lg-7">
+        <h1 class="display-5 fw-bold">Every store. One marketplace.</h1>
+        <p class="lead opacity-75 mb-4">
+          Browse thousands of products from independent vendors, add to one cart,
+          and track your orders end to end.
+        </p>
+        <div class="d-flex flex-wrap gap-2">
+          <a class="btn btn-accent btn-lg" routerLink="/signup">Start shopping</a>
+          <a class="btn btn-outline-light btn-lg" routerLink="/signup">Sell on onlineStore</a>
+        </div>
+      </div>
+      <div class="col-lg-5 text-center d-none d-lg-block">
+        <i class="bi bi-shop display-1 opacity-50"></i>
+      </div>
+    </div>
+  </div>
+</header>
+
+<section class="container py-5">
+  <h2 class="h4 fw-bold mb-4">Shop by category</h2>
+  <div class="row row-cols-2 row-cols-md-3 row-cols-lg-6 g-3">
+    @for (cat of categories; track cat.name) {
+      <div class="col">
+        <div class="card h-100 text-center py-4 border-0 shadow-sm">
+          <i class="bi {{ cat.icon }} fs-2 text-brand"></i>
+          <div class="mt-2 fw-semibold small">{{ cat.name }}</div>
+        </div>
+      </div>
+    }
+  </div>
+</section>
+
+<section class="bg-white border-top py-5">
+  <div class="container">
+    <div class="row g-4">
+      @for (perk of perks; track perk.title) {
+        <div class="col-md-4">
+          <div class="d-flex gap-3">
+            <i class="bi {{ perk.icon }} fs-3 text-accent"></i>
+            <div>
+              <h3 class="h6 fw-bold">{{ perk.title }}</h3>
+              <p class="text-muted small mb-0">{{ perk.text }}</p>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<footer class="bg-brand text-white-50 py-4">
+  <div class="container d-flex flex-wrap justify-content-between gap-2 small">
+    <span>© {{ 2026 }} onlineStore</span>
+    <span>A multi-vendor marketplace demo · Phase 1</span>
+  </div>
+</footer>
