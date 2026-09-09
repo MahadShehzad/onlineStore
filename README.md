@@ -98,8 +98,14 @@ src/app/
   app.routes.ts    lazy, role-guarded routes
 ```
 
+## Deep dive
+
+[**PROJECT_GUIDE.md**](PROJECT_GUIDE.md) — a full walkthrough (Roman Urdu) of the
+architecture, every folder, the Angular concepts used, JWT auth, the API,
+Bootstrap/CSS strategy, server-side pagination, and end-to-end request traces.
+
 ## Not included (would be next)
 
 - Real Stripe integration (checkout uses a simulated payment reference)
-- Cloud image upload (products/stores take image URLs)
+- Cloud image upload (products/stores take image URLs; a generated SVG is the fallback)
 - E2E tests (Cypress), production deployment manifests
